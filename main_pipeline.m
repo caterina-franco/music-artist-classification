@@ -18,22 +18,22 @@ folder1 = {'laufey'; 'simpleplan'; 'skz'};
 folder2 = {'train'; 'test'};
 
 % features extraction for every test and train folder
-[chromaLaufeyTrainFeats, mfccLaufeyTrainFeats, LaufeyTrainFeats] = feature_extraction(folder1{1}, folder2{1}, 'mp3');
-[chromaLaufeyTestFeats, mfccLaufeyTestFeats, LaufeyTestFeats] = feature_extraction(folder1{1}, folder2{2}, 'mp3');
-[chromaSimplePlanTrainFeats, mfccSimplePlanTrainFeats, SimplePlanTrainFeats] = feature_extraction(folder1{2}, folder2{1}, 'mp3');
-[chromaSimplePlanTestFeats, mfccSimplePlanTestFeats, SimplePlanTestFeats] = feature_extraction(folder1{2}, folder2{2}, 'mp3');
-[chromaSKZTrainFeats, mfccSKZTrainFeats, SKZTrainFeats] = feature_extraction(folder1{3}, folder2{1}, 'mp3');
-[chromaSKZTestFeats, mfccSKZTestFeats, SKZTestFeats] = feature_extraction(folder1{3}, folder2{2}, 'mp3');
+[chromaLaufeyTrainFeats, mfccLaufeyTrainFeats, LaufeyTrainFeats] = extractAudioFeatures(folder1{1}, folder2{1}, 'mp3');
+[chromaLaufeyTestFeats, mfccLaufeyTestFeats, LaufeyTestFeats] = extractAudioFeatures(folder1{1}, folder2{2}, 'mp3');
+[chromaSimplePlanTrainFeats, mfccSimplePlanTrainFeats, SimplePlanTrainFeats] = extractAudioFeatures(folder1{2}, folder2{1}, 'mp3');
+[chromaSimplePlanTestFeats, mfccSimplePlanTestFeats, SimplePlanTestFeats] = extractAudioFeatures(folder1{2}, folder2{2}, 'mp3');
+[chromaSKZTrainFeats, mfccSKZTrainFeats, SKZTrainFeats] = extractAudioFeatures(folder1{3}, folder2{1}, 'mp3');
+[chromaSKZTestFeats, mfccSKZTestFeats, SKZTestFeats] = extractAudioFeatures(folder1{3}, folder2{2}, 'mp3');
 
 % labels extraction for every test and train folder
-[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = label_extraction(chromaLaufeyTrainFeats, chromaLaufeyTestFeats, chromaSimplePlanTrainFeats, chromaSimplePlanTestFeats, chromaSKZTrainFeats, chromaSKZTestFeats);
-[recognitionRate1, title1] = KNN_confusionMatrix(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'CHROMA', '-pg');
+[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = prepareDatasetLabels(chromaLaufeyTrainFeats, chromaLaufeyTestFeats, chromaSimplePlanTrainFeats, chromaSimplePlanTestFeats, chromaSKZTrainFeats, chromaSKZTestFeats);
+[recognitionRate1, title1] = evaluateKNN(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'CHROMA', '-pg');
 
-[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = label_extraction(mfccLaufeyTrainFeats, mfccLaufeyTestFeats, mfccSimplePlanTrainFeats, mfccSimplePlanTestFeats, mfccSKZTrainFeats, mfccSKZTestFeats);
-[recognitionRate2, title2] = KNN_confusionMatrix(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'MFCCs', '-pm');
+[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = prepareDatasetLabels(mfccLaufeyTrainFeats, mfccLaufeyTestFeats, mfccSimplePlanTrainFeats, mfccSimplePlanTestFeats, mfccSKZTrainFeats, mfccSKZTestFeats);
+[recognitionRate2, title2] = evaluateKNN(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'MFCCs', '-pm');
 
-[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = label_extraction(LaufeyTrainFeats, LaufeyTestFeats, SimplePlanTrainFeats, SimplePlanTestFeats, SKZTrainFeats, SKZTestFeats);
-[recognitionRate3, title3] = KNN_confusionMatrix(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'GENERAL', '-pr');
+[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = prepareDatasetLabels(LaufeyTrainFeats, LaufeyTestFeats, SimplePlanTrainFeats, SimplePlanTestFeats, SKZTrainFeats, SKZTestFeats);
+[recognitionRate3, title3] = evaluateKNN(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, 'GENERAL', '-pr');
 
 [recognitionRates, index] = max([recognitionRate1, recognitionRate2, recognitionRate3]);
 
@@ -61,7 +61,7 @@ folder2 = {'train'; 'test'};
 % add noise to the audio files and put them in two folders created specifically
 for i = 1:3
     for j = 1:2
-        noise_enhanced(folder1{i}, noise, folder2{j})
+        applyNoiseAndDenoise(folder1{i}, noise, folder2{j})
     end
 end
 
@@ -69,16 +69,16 @@ end
 folder2 = {'noisetrain'; 'noisetest'};
 
 % best KNN extraction for every test and train folder
-[LaufeyTrainFeats] = bestKNN_extraction(folder1{1}, folder2{1}, 'wav', index);
-[LaufeyTestFeats] = bestKNN_extraction(folder1{1}, folder2{2}, 'wav', index);
-[SimplePlanTrainFeats] = bestKNN_extraction(folder1{2}, folder2{1}, 'wav', index);
-[SimplePlanTestFeats] = bestKNN_extraction(folder1{2}, folder2{2}, 'wav', index);
-[SKZTrainFeats] = bestKNN_extraction(folder1{3}, folder2{1}, 'wav', index);
-[SKZTestFeats] = bestKNN_extraction(folder1{3}, folder2{2}, 'wav', index);
+[LaufeyTrainFeats] = extractOptimalFeatures(folder1{1}, folder2{1}, 'wav', index);
+[LaufeyTestFeats] = extractOptimalFeatures(folder1{1}, folder2{2}, 'wav', index);
+[SimplePlanTrainFeats] = extractOptimalFeatures(folder1{2}, folder2{1}, 'wav', index);
+[SimplePlanTestFeats] = extractOptimalFeatures(folder1{2}, folder2{2}, 'wav', index);
+[SKZTrainFeats] = extractOptimalFeatures(folder1{3}, folder2{1}, 'wav', index);
+[SKZTestFeats] = extractOptimalFeatures(folder1{3}, folder2{2}, 'wav', index);
 
 % labels extraction, compute the KNN and confusion matrix and plot the results of the matrix on a colored graph 
-[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = label_extraction(LaufeyTrainFeats, LaufeyTestFeats, SimplePlanTrainFeats, SimplePlanTestFeats, SKZTrainFeats, SKZTestFeats);
-KNN_confusionMatrix(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, bestKNN, '-pg');
+[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = prepareDatasetLabels(LaufeyTrainFeats, LaufeyTestFeats, SimplePlanTrainFeats, SimplePlanTestFeats, SKZTrainFeats, SKZTestFeats);
+evaluateKNN(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, bestKNN, '-pg');
 
 % ––––––––––––––––––––––––––– ENHANCED FILES –––––––––––––––––––––––––––––
 
@@ -90,14 +90,14 @@ folder1 = {'laufey'; 'simpleplan'; 'skz'};
 folder2 = {'enhancedtrain'; 'enhancedtest'};
 
 % best KNN extraction for every test and train folder
-[LaufeyTrainFeats] = bestKNN_extraction(folder1{1}, folder2{1}, 'wav', index);
-[LaufeyTestFeats] = bestKNN_extraction(folder1{1}, folder2{2}, 'wav', index);
-[SimplePlanTrainFeats] = bestKNN_extraction(folder1{2}, folder2{1}, 'wav', index);
-[SimplePlanTestFeats] = bestKNN_extraction(folder1{2}, folder2{2}, 'wav', index);
-[SKZTrainFeats] = bestKNN_extraction(folder1{3}, folder2{1}, 'wav', index);
-[SKZTestFeats] = bestKNN_extraction(folder1{3}, folder2{2}, 'wav', index);
+[LaufeyTrainFeats] = extractOptimalFeatures(folder1{1}, folder2{1}, 'wav', index);
+[LaufeyTestFeats] = extractOptimalFeatures(folder1{1}, folder2{2}, 'wav', index);
+[SimplePlanTrainFeats] = extractOptimalFeatures(folder1{2}, folder2{1}, 'wav', index);
+[SimplePlanTestFeats] = extractOptimalFeatures(folder1{2}, folder2{2}, 'wav', index);
+[SKZTrainFeats] = extractOptimalFeatures(folder1{3}, folder2{1}, 'wav', index);
+[SKZTestFeats] = extractOptimalFeatures(folder1{3}, folder2{2}, 'wav', index);
 
 % labels extraction, compute the KNN and confusion matrix and plot the results of the matrix on a colored graph 
-[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = label_extraction(chromaLaufeyTrainFeats, chromaLaufeyTestFeats, chromaSimplePlanTrainFeats, chromaSimplePlanTestFeats, chromaSKZTrainFeats, chromaSKZTestFeats);
+[all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3] = prepareDatasetLabels(chromaLaufeyTrainFeats, chromaLaufeyTestFeats, chromaSimplePlanTrainFeats, chromaSimplePlanTestFeats, chromaSKZTrainFeats, chromaSKZTestFeats);
 
-KNN_confusionMatrix(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, bestKNN, '-pg');
+evaluateKNN(all_Train, all_Test, all_Labels, ground_truth, testLabel1, testLabel2, testLabel3, bestKNN, '-pg');
